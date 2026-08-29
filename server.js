@@ -1,10 +1,10 @@
 const express = require('express');
-const axios = require('axios');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Serve static files (like index.html)
 app.use(express.static(__dirname));
 
 // Show the index.html page
@@ -12,7 +12,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// API Route using Open-Meteo (Free, works instantly, NO KEY NEEDED)
+// API Route using Vercel's built-in Fetch (No axios needed)
 app.get('/api/weather', async (req, res) => {
     const city = req.query.city;
 
@@ -21,26 +21,29 @@ app.get('/api/weather', async (req, res) => {
     }
 
     try {
-        // Step 1: Find the city's coordinates
-        const geoResponse = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1`);
-        
-        if (!geoResponse.data.results || geoResponse.data.results.length === 0) {
+        // Find city coordinates using Open-Meteo
+        const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1`);
+        const geoData = await geoResponse.json();
+
+        if (!geoData.results || geoData.results.length === 0) {
             return res.status(404).json({ error: 'City not found. Please try again.' });
         }
 
-        const { latitude, longitude, name } = geoResponse.data.results[0];
+        const { latitude, longitude, name } = geoData.results[0];
 
-        // Step 2: Get weather for those coordinates
-        const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+        // Get weather for those coordinates
+        const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+        const weatherData = await weatherResponse.json();
 
         res.json({
             name: name,
-            temp: weatherResponse.data.current_weather.temperature,
-            description: weatherResponse.data.current_weather.weathercode
+            temp: weatherData.current_weather.temperature,
+            description: weatherData.current_weather.weathercode
         });
 
     } catch (error) {
-        res.status(500).json({ error: 'Something went wrong' });
+        console.error("Server Error:", error);
+        res.status(500).json({ error: 'Server error, please try again' });
     }
 });
 
