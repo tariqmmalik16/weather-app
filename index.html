@@ -5,65 +5,115 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SkyCast - Your Weather, Your Way</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        * {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #4b3f72, #6a5acd);
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
             color: white;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
         .container {
             text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            padding: 50px;
+            border-radius: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 500px;
+            width: 100%;
         }
         h1 {
-            font-size: 3rem;
+            font-size: 3.5rem;
             margin-bottom: 10px;
-            color: #ffd700;
+            background: linear-gradient(135deg, #ffd700, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        p {
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
             margin-bottom: 30px;
+            font-size: 0.95rem;
         }
         .search-box {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
             margin-bottom: 30px;
         }
         input {
-            padding: 10px;
+            padding: 14px 20px;
             width: 250px;
             border: none;
-            border-radius: 5px;
+            border-radius: 50px;
             outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        input:focus {
+            border-color: #ffd700;
+            background: rgba(255, 255, 255, 0.15);
         }
         button {
-            padding: 10px 20px;
+            padding: 14px 30px;
             border: none;
-            border-radius: 5px;
-            background-color: #ffd700;
-            color: #333;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #ffd700, #f7971e);
+            color: #1a1a2e;
             font-weight: bold;
             cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
         }
         button:hover {
-            background-color: #ffea00;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
         }
         #result {
             margin-top: 20px;
-            font-size: 1.5rem;
+        }
+        #temp {
+            font-size: 4rem;
+            font-weight: bold;
+        }
+        #cityName {
+            font-size: 1.8rem;
+            margin: 5px 0;
+        }
+        #description {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .loading {
+            opacity: 0.6;
+        }
+        .error-msg {
+            color: #ff6b6b;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>SkyCast</h1>
-        <p>Search any city in the world and get real-time weather updates instantly.</p>
+        <h1>☀️ SkyCast</h1>
+        <p class="subtitle">Search any city and get real-time weather updates instantly</p>
         
         <div class="search-box">
             <input type="text" id="cityInput" placeholder="Enter city name (e.g. Lahore)">
@@ -79,7 +129,7 @@
 
     <script>
         async function getWeather() {
-            const city = document.getElementById('cityInput').value;
+            const city = document.getElementById('cityInput').value.trim();
             const tempElement = document.getElementById('temp');
             const cityElement = document.getElementById('cityName');
             const descElement = document.getElementById('description');
@@ -89,22 +139,43 @@
                 return;
             }
 
+            // Show loading state
+            tempElement.innerText = "⏳";
+            tempElement.classList.add('loading');
+            cityElement.innerText = city;
+            descElement.innerText = "Fetching weather...";
+
             try {
-                // This is the exact live link to your server
-                const response = await fetch(`https://weather-app-acm-f134.vercel.app/api/weather?city=${city}`);
+                const response = await fetch(`/api/weather?city=${encodeURIComponent(city)}`);
                 const data = await response.json();
 
                 if (data.error) {
-                    alert("City not found. Please try again.");
+                    alert(data.error);
+                    tempElement.innerText = "--°C";
+                    cityElement.innerText = "City Name";
+                    descElement.innerText = "";
                 } else {
-                    tempElement.innerText = Math.round(data.main.temp) + "°C";
-                    cityElement.innerText = data.name;
-                    descElement.innerText = data.weather[0].description;
+                    tempElement.innerText = data.temp + "°C";
+                    cityElement.innerText = data.name + (data.country ? `, ${data.country}` : '');
+                    descElement.innerText = data.description;
                 }
             } catch (error) {
+                console.error("Error:", error);
                 alert("Something went wrong! Please try again later.");
+                tempElement.innerText = "--°C";
+                cityElement.innerText = "City Name";
+                descElement.innerText = "";
+            } finally {
+                tempElement.classList.remove('loading');
             }
         }
+
+        // Allow Enter key to search
+        document.getElementById('cityInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                getWeather();
+            }
+        });
     </script>
 </body>
 </html>
