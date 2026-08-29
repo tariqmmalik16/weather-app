@@ -3,179 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkyCast - Your Weather, Your Way</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .container {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            padding: 50px;
-            border-radius: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-width: 500px;
-            width: 100%;
-        }
-        h1 {
-            font-size: 3.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #ffd700, #ff6b6b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .subtitle {
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 30px;
-            font-size: 0.95rem;
-        }
-        .search-box {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 30px;
-        }
-        input {
-            padding: 14px 20px;
-            width: 250px;
-            border: none;
-            border-radius: 50px;
-            outline: none;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s;
-        }
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        input:focus {
-            border-color: #ffd700;
-            background: rgba(255, 255, 255, 0.15);
-        }
-        button {
-            padding: 14px 30px;
-            border: none;
-            border-radius: 50px;
-            background: linear-gradient(135deg, #ffd700, #f7971e);
-            color: #1a1a2e;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1rem;
-        }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
-        }
-        #result {
-            margin-top: 20px;
-        }
-        #temp {
-            font-size: 4rem;
-            font-weight: bold;
-        }
-        #cityName {
-            font-size: 1.8rem;
-            margin: 5px 0;
-        }
-        #description {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-        .loading {
-            opacity: 0.6;
-        }
-        .error-msg {
-            color: #ff6b6b;
-            margin-top: 10px;
-        }
-    </style>
+    <title>SkyCast | Modern Weather</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>☀️ SkyCast</h1>
-        <p class="subtitle">Search any city and get real-time weather updates instantly</p>
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">☁️ SkyCast</div>
+        <ul>
+            <li><a href="/" class="active">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Hero Section -->
+    <main class="container">
+        <h1 class="headline">Weather, <span>Beautifully</span> Forecasted</h1>
         
         <div class="search-box">
-            <input type="text" id="cityInput" placeholder="Enter city name (e.g. Lahore)">
+            <input type="text" id="city-input" placeholder="Search for a city...">
             <button onclick="getWeather()">Get Weather</button>
         </div>
 
-        <div id="result">
-            <h2 id="temp">--°C</h2>
-            <h3 id="cityName">City Name</h3>
-            <p id="description"></p>
+        <!-- Weather Card -->
+        <div class="weather-card" id="weather-card" style="display: none;">
+            <h2 id="city-name">City</h2>
+            <div class="temperature" id="temp">--°C</div>
+            <p id="description">Clear Sky</p>
+            <div class="details">
+                <p>Humidity: <span id="humidity">--%</span></p>
+                <p>Wind: <span id="wind">-- km/h</span></p>
+            </div>
         </div>
-    </div>
+    </main>
 
-    <script>
-        async function getWeather() {
-            const city = document.getElementById('cityInput').value.trim();
-            const tempElement = document.getElementById('temp');
-            const cityElement = document.getElementById('cityName');
-            const descElement = document.getElementById('description');
-
-            if (!city) {
-                alert("Please enter a city name!");
-                return;
-            }
-
-            // Show loading state
-            tempElement.innerText = "⏳";
-            tempElement.classList.add('loading');
-            cityElement.innerText = city;
-            descElement.innerText = "Fetching weather...";
-
-            try {
-                const response = await fetch(`/api/weather?city=${encodeURIComponent(city)}`);
-                const data = await response.json();
-
-                if (data.error) {
-                    alert(data.error);
-                    tempElement.innerText = "--°C";
-                    cityElement.innerText = "City Name";
-                    descElement.innerText = "";
-                } else {
-                    tempElement.innerText = data.temp + "°C";
-                    cityElement.innerText = data.name + (data.country ? `, ${data.country}` : '');
-                    descElement.innerText = data.description;
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Something went wrong! Please try again later.");
-                tempElement.innerText = "--°C";
-                cityElement.innerText = "City Name";
-                descElement.innerText = "";
-            } finally {
-                tempElement.classList.remove('loading');
-            }
-        }
-
-        // Allow Enter key to search
-        document.getElementById('cityInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                getWeather();
-            }
-        });
-    </script>
+    <script src="/js/main.js"></script>
 </body>
 </html>
