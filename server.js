@@ -5,10 +5,12 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve the static HTML file (like index.html) from the same folder
-app.use(express.static(__dirname));
+// THIS IS THE FIX: Tell Express to specifically find and show 'index.html'
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
-// API Route to get weather (for testing)
+// API Route to get weather
 app.get('/api/weather', async (req, res) => {
     try {
         const response = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=33.68&longitude=73.04&current_weather=true`);
