@@ -5,8 +5,13 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve the static HTML file
+// Serve static files from the current directory
 app.use(express.static(__dirname));
+
+// This is the magic line to show your index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // API Route to get weather for a specific city
 app.get('/api/weather', async (req, res) => {
@@ -21,7 +26,6 @@ app.get('/api/weather', async (req, res) => {
         const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
         res.json(response.data);
     } catch (error) {
-        // If the city is not found, send a specific error message
         res.status(500).json({ error: 'City not found or API error' });
     }
 });
