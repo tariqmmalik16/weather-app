@@ -5,7 +5,6 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files
 app.use(express.static(__dirname));
 
 // Show the index.html page
@@ -13,40 +12,40 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// API Route using your ACTIVE OpenWeatherMap key
+// API Route using Open-Meteo (Free, works instantly, NO KEY NEEDED)
 app.get('/api/weather', async (req, res) => {
     const city = req.query.city;
-    const apiKey = 'acdf2584e385d736b6e7d4d9ba0a006e';
 
     if (!city) {
         return res.status(400).json({ error: 'City is required' });
     }
 
     try {
-        // Fetching data from OpenWeatherMap
-        const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+        // Step 1: Find the city's coordinates
+        const geoResponse = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1`);
         
-        // Send the exact data back to the website
+        if (!geoResponse.data.results || geoResponse.data.results.length === 0) {
+            return res.status(404).json({ error: 'City not found. Please try again.' });
+        }
+
+        const { latitude, longitude, name } = geoResponse.data.results[0];
+
+        // Step 2: Get weather for those coordinates
+        const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+
         res.json({
-            name: response.data.name,
-            temp: response.data.main.temp,
-            description: response.data.weather[0].description
+            name: name,
+            temp: weatherResponse.data.current_weather.temperature,
+            description: weatherResponse.data.current_weather.weathercode
         });
 
     } catch (error) {
-        // THIS PART IS IMPORTANT: It shows us the REAL error message
-        console.error("Error details:", error.message);
-        if (error.response && error.response.status === 401) {
-            return res.status(401).json({ error: 'Invalid API Key' });
-        }
-        res.status(500).json({ error: 'City not found or server error' });
+        res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-// Vercel needs this export
 module.exports = app;
 
-// Local testing
 if (require.main === module) {
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
