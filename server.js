@@ -5,18 +5,24 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// THIS IS THE FIX: Tell Express to specifically find and show 'index.html'
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+// Serve the static HTML file
+app.use(express.static(__dirname));
 
-// API Route to get weather
+// API Route to get weather for a specific city
 app.get('/api/weather', async (req, res) => {
+    const city = req.query.city;
+    const apiKey = 'acdf2584e385d736b6e7d4d9ba0a006e'; // Your active key
+
+    if (!city) {
+        return res.status(400).json({ error: 'City is required' });
+    }
+
     try {
-        const response = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=33.68&longitude=73.04&current_weather=true`);
+        const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
         res.json(response.data);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch weather' });
+        // If the city is not found, send a specific error message
+        res.status(500).json({ error: 'City not found or API error' });
     }
 });
 
