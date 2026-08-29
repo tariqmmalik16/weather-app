@@ -13,36 +13,33 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// API Route to get weather (Uses Open-Meteo - completely free, no key needed)
+// API Route using your ACTIVE OpenWeatherMap key
 app.get('/api/weather', async (req, res) => {
     const city = req.query.city;
+    const apiKey = 'acdf2584e385d736b6e7d4d9ba0a006e';
 
     if (!city) {
         return res.status(400).json({ error: 'City is required' });
     }
 
     try {
-        // 1. First, we search for the city's coordinates (Latitude and Longitude)
-        const geoResponse = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1`);
+        // Fetching data from OpenWeatherMap
+        const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
         
-        if (!geoResponse.data.results || geoResponse.data.results.length === 0) {
-            return res.status(404).json({ error: 'City not found. Please try again.' });
-        }
-
-        const { latitude, longitude, name } = geoResponse.data.results[0];
-
-        // 2. Then, we get the weather for those exact coordinates
-        const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
-
-        // 3. Send the weather back to the frontend
+        // Send the exact data back to the website
         res.json({
-            name: name,
-            temp: weatherResponse.data.current_weather.temperature,
-            description: weatherResponse.data.current_weather.weathercode
+            name: response.data.name,
+            temp: response.data.main.temp,
+            description: response.data.weather[0].description
         });
 
     } catch (error) {
-        res.status(500).json({ error: 'Something went wrong' });
+        // THIS PART IS IMPORTANT: It shows us the REAL error message
+        console.error("Error details:", error.message);
+        if (error.response && error.response.status === 401) {
+            return res.status(401).json({ error: 'Invalid API Key' });
+        }
+        res.status(500).json({ error: 'City not found or server error' });
     }
 });
 
