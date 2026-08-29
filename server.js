@@ -1,56 +1,32 @@
 const express = require('express');
-const path = require('path');
 const axios = require('axios');
+const path = require('path');
+
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-    res.sendFile('C:\\Users\\TARIQ\\Desktop\\weather app\\index.html');
-});
+// Serve the static HTML file
+app.use(express.static(path.join(__dirname)));
 
-app.get('/weather', async (req, res) => {
+// API Route to get weather
+app.get('/api/weather', async (req, res) => {
     const city = req.query.city;
-    const API_KEY = 'acdf2584e385d730bb6e7d49ba0a006e';
+    if (!city) {
+        return res.status(400).json({ error: 'City is required' });
+    }
 
     try {
-        const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`);
-        res.json({
-            city: response.data.name,
-            country: response.data.sys.country,
-            temp: Math.round(response.data.main.temp),
-            icon: getIcon(response.data.weather[0].icon),
-            feels_like: Math.round(response.data.main.feels_like),
-            humidity: response.data.main.humidity,
-            wind: Math.round(response.data.wind.speed),
-            pressure: response.data.main.pressure
-        });
-    } catch {
-        res.json({ error: 'City not found' });
+        // Note: You usually need an API key for this. 
+        // If you don't have one, use this free test endpoint (it might be limited)
+        const response = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=33.68&longitude=73.04&current_weather=true`);
+        
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch weather' });
     }
 });
 
-function getIcon(code) {
-    const icons = {
-        '01d': 'SUN',
-        '01n': 'MOON',
-        '02d': 'CLOUD_SUN',
-        '02n': 'CLOUD_MOON',
-        '03d': 'CLOUD',
-        '03n': 'CLOUD',
-        '04d': 'CLOUD',
-        '04n': 'CLOUD',
-        '09d': 'RAIN',
-        '09n': 'RAIN',
-        '10d': 'RAIN',
-        '10n': 'RAIN',
-        '11d': 'STORM',
-        '11n': 'STORM',
-        '13d': 'SNOW',
-        '13n': 'SNOW'
-    };
-    return icons[code] || 'CLOUD';
-}
-
+// Start the server
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
