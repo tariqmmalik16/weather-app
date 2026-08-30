@@ -3,14 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkyCast | Modern Weather</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    
-    <!-- IMPORTANT: The 'S' in Style.css is CAPITAL -->
-    <link rel="stylesheet" href="/css/Style.css">
+    <title>SkyCast</title>
+    <link rel="stylesheet" href="Style.css">
 </head>
 <body>
-    <!-- Navigation -->
     <nav>
         <div class="logo">☁️ SkyCast</div>
         <ul>
@@ -19,17 +15,12 @@
             <li><a href="/contact">Contact</a></li>
         </ul>
     </nav>
-
-    <!-- Main Hero Section -->
     <main class="container">
         <h1 class="headline">Weather, <span>Beautifully</span> Forecasted</h1>
-        
         <div class="search-box">
             <input type="text" id="city-input" placeholder="Search for a city...">
             <button onclick="getWeather()">Get Weather</button>
         </div>
-
-        <!-- Weather Card -->
         <div class="weather-card" id="weather-card" style="display: none;">
             <h2 id="city-name">City</h2>
             <div class="temperature" id="temp">--°C</div>
@@ -40,7 +31,6 @@
             </div>
         </div>
     </main>
-
-    <script src="/js/main.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
