@@ -1,20 +1,46 @@
-async function getWeather() {
-    const city = document.getElementById('city-input').value;
-    if (!city) return alert("Please enter a city!");
+const express = require('express');
+const path = require('path');
+const app = express();
+
+// Serve the files directly from the root folder
+app.use(express.static(__dirname));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/about', (req, res) => {
+    res.sendFile(path.join(__dirname, 'about.html'));
+});
+
+app.get('/contact', (req, res) => {
+    res.sendFile(path.join(__dirname, 'contact.html'));
+});
+
+app.get('/api/weather', async (req, res) => {
+    const city = req.query.city;
+    const apiKey = 'YOUR_API_KEY_HERE'; 
+
+    if (!city) {
+        return res.status(400).json({ error: "City is required" });
+    }
 
     try {
-        const response = await fetch(`/api/weather?city=${city}`);
+        const fetch = await import('node-fetch');
+        const response = await fetch.default(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
         const data = await response.json();
 
-        document.getElementById('city-name').innerText = data.city;
-        document.getElementById('temp').innerText = `${data.temp}°C`;
-        document.getElementById('description').innerText = data.weather;
-        document.getElementById('humidity').innerText = `${data.humidity}%`;
-        document.getElementById('wind').innerText = `${data.wind} km/h`;
-
-        document.getElementById('weather-card').style.display = 'block';
+        res.json({
+            city: data.name,
+            temp: data.main.temp,
+            weather: data.weather[0].main,
+            humidity: data.main.humidity,
+            wind: data.wind.speed
+        });
     } catch (error) {
-        alert("Could not fetch weather. Please try again.");
-        console.error(error);
+        res.status(500).json({ error: "Could not fetch weather data" });
     }
-}
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
