@@ -1,0 +1,82 @@
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #00f260, #0575e6); /* Modern Blue-Green Gradient */
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+nav ul { list-style: none; display: flex; gap: 20px; }
+nav a { color: white; text-decoration: none; font-weight: 600; transition: 0.3s; }
+nav a:hover, nav a.active { text-shadow: 0 0 10px rgba(255,255,255,0.8); }
+
+.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.headline { font-size: 3rem; margin-bottom: 40px; text-align: center; }
+.headline span { color: #ffd700; }
+
+/* Glassmorphism Card */
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    border-radius: 50px;
+    backdrop-filter: blur(5px);
+}
+
+input {
+    border: none;
+    background: transparent;
+    color: white;
+    outline: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+}
+
+button {
+    border: none;
+    padding: 10px 30px;
+    border-radius: 50px;
+    background: white;
+    color: #0575e6;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+button:hover { transform: scale(1.05); }
+
+.weather-card {
+    background: rgba(255, 255, 255, 0.25);
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    width: 100%;
+    max-width: 400px;
+}
+
+.temperature { font-size: 5rem; font-weight: 600; margin: 10px 0; }
+.details { display: flex; justify-content: space-around; margin-top: 20px; font-size: 0.9rem; }
